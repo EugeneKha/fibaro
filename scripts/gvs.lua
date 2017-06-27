@@ -1,9 +1,11 @@
 --[[
 %% properties
-31 value
 %% events
 %% globals
 --]]
+
+local HEATING_START_T   = 28
+local HEATING_STOP_T    = 45
 
 function water_t()
 	return tonumber(fibaro:getValue(31, "value"))
@@ -18,7 +20,7 @@ function turnOn_heating()
     if (tonumber(fibaro:getValue(37, "value")) == 0)
     then
 	    fibaro:call(37, "turnOn")
-        fibaro:debug('Тепловой насос включен')
+        fibaro:debug('Heat pump started')
     end
 end
 
@@ -27,7 +29,7 @@ function turnOff_heating()
     if (tonumber(fibaro:getValue(37, "value")) == 1)
     then
 	    fibaro:call(37, "turnOff")
-        fibaro:debug('Тепловой насос вЫключен')
+        fibaro:debug('Heat pump stopped')
     end
 end
 
@@ -36,7 +38,7 @@ function turnOn_pump()
     if (tonumber(fibaro:getValue(38, "value")) == 0)
     then
 	    fibaro:call(38, "turnOn")
-        fibaro:debug('Насос ГВС включен')
+        fibaro:debug('Pump stopped')
     end
 end
 
@@ -45,24 +47,24 @@ function turnOff_pump()
     if (tonumber(fibaro:getValue(38, "value")) == 1)
     then
         fibaro:call(38, "turnOff")
-        fibaro:debug('Насос ГВС вЫключен')
+        fibaro:debug('Pump started')
     end
 end
 
 function start_heating()
 
-    fibaro:debug('Начат нагрев воды')
+    fibaro:debug('Water Heating started')
 
 
     while true do
 
-        if (water_t() >= 45)
+        if (water_t() >= HEATING_STOP_T)
         then
-            fibaro:debug('Нагрев воды закончен')
+            fibaro:debug('Water Heating completed')
             break
         end
 
-        fibaro:debug('Нагрев воды продолжается ' .. water_t())
+        fibaro:debug('Water Heating in progress: ' .. water_t())
 
         turnOn_pump()
 
@@ -85,11 +87,11 @@ function start_heating()
 end
 
 function need_heating()
-    fibaro:debug('Тест воды ГВС начат')
+    fibaro:debug('Water Temp test started')
 
     for i=0,10,1 
     do
-        if (water_t() > 30)
+        if (water_t() > HEATING_START_T)
         then
             break
         end
@@ -100,8 +102,8 @@ function need_heating()
     turnOff_heating()
 
 
-    fibaro:debug('Тест воды ГВС '..water_t())
-    return water_t() < 30
+    fibaro:debug('Water Temp test completed: '..water_t())
+    return water_t() < HEATING_START_T
 end
 
 turnOff_heating()
