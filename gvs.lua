@@ -13,7 +13,7 @@ function freon_t()
 	return tonumber(fibaro:getValue(32, "value"))
 end
 
-function turnOn_hitting()
+function turnOn_heating()
     fibaro:sleep(1000)
     if (tonumber(fibaro:getValue(37, "value")) == 0)
     then
@@ -22,7 +22,7 @@ function turnOn_hitting()
     end
 end
 
-function turnOff_hitting()
+function turnOff_heating()
     fibaro:sleep(1000)
     if (tonumber(fibaro:getValue(37, "value")) == 1)
     then
@@ -49,7 +49,7 @@ function turnOff_pump()
     end
 end
 
-function start_hitting()
+function start_heating()
 
     fibaro:debug('Начат нагрев воды')
 
@@ -68,23 +68,23 @@ function start_hitting()
 
         if (freon_t() >= 57)
         then
-            turnOff_hitting()
+            turnOff_heating()
         end
 
         if (freon_t() < 57)
         then
-            turnOn_hitting()
+            turnOn_heating()
         end  
 
         fibaro:sleep(5000) -- Run every 5 SECOND
     end
 
     turnOff_pump()
-    turnOff_hitting()
+    turnOff_heating()
 
 end
 
-function need_hitting()
+function need_heating()
     fibaro:debug('Тест воды ГВС начат')
 
     for i=0,10,1 
@@ -97,20 +97,20 @@ function need_hitting()
         fibaro:sleep(30*1000)
     end
     turnOff_pump()
-    turnOff_hitting()
+    turnOff_heating()
 
 
     fibaro:debug('Тест воды ГВС '..water_t())
     return water_t() < 30
 end
 
-turnOff_hitting()
+turnOff_heating()
 turnOff_pump()
 
 while true do
-    if (need_hitting())
+    if (need_heating())
     then
-        start_hitting()
+        start_heating()
     end
     fibaro:sleep(30*60*1000) -- sleep for 30 minutes
 end
