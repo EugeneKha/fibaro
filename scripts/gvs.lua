@@ -38,7 +38,7 @@ function turnOn_pump()
     if (tonumber(fibaro:getValue(38, "value")) == 0)
     then
 	    fibaro:call(38, "turnOn")
-        fibaro:debug('Pump stopped')
+        fibaro:debug('Pump started')
     end
 end
 
@@ -47,7 +47,7 @@ function turnOff_pump()
     if (tonumber(fibaro:getValue(38, "value")) == 1)
     then
         fibaro:call(38, "turnOff")
-        fibaro:debug('Pump started')
+        fibaro:debug('Pump stopped')
     end
 end
 
