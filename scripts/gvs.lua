@@ -4,49 +4,55 @@
 %% globals
 --]]
 
-local HEATING_START_T   = 28
-local HEATING_STOP_T    = 45
+local HEATING_START_T       = 40
+local HEATING_STOP_T        = 45
+local MAX_FREON_T           = 57
+
+local HOT_WATER_SENSOR_ID   = 57
+local FREON_SENSOR_ID       = 48
+local HEAT_PUMP_RELEY_ID    = 37
+local WATER_PUMP_RELEY_ID   = 38
 
 function water_t()
-	return tonumber(fibaro:getValue(31, "value"))
+	return tonumber(fibaro:getValue(HOT_WATER_SENSOR_ID, "value"))
 end
 
 function freon_t()
-	return tonumber(fibaro:getValue(32, "value"))
+	return tonumber(fibaro:getValue(FREON_SENSOR_ID, "value"))
 end
 
 function turnOn_heating()
     fibaro:sleep(1000)
-    if (tonumber(fibaro:getValue(37, "value")) == 0)
+    if (tonumber(fibaro:getValue(HEAT_PUMP_RELEY_ID, "value")) == 0)
     then
-	    fibaro:call(37, "turnOn")
+	    fibaro:call(HEAT_PUMP_RELEY_ID, "turnOn")
         fibaro:debug('Heat pump started')
     end
 end
 
 function turnOff_heating()
     fibaro:sleep(1000)
-    if (tonumber(fibaro:getValue(37, "value")) == 1)
+    if (tonumber(fibaro:getValue(HEAT_PUMP_RELEY_ID, "value")) == 1)
     then
-	    fibaro:call(37, "turnOff")
+	    fibaro:call(HEAT_PUMP_RELEY_ID, "turnOff")
         fibaro:debug('Heat pump stopped')
     end
 end
 
 function turnOn_pump()
     fibaro:sleep(1000)
-    if (tonumber(fibaro:getValue(38, "value")) == 0)
+    if (tonumber(fibaro:getValue(WATER_PUMP_RELEY_ID, "value")) == 0)
     then
-	    fibaro:call(38, "turnOn")
+	    fibaro:call(WATER_PUMP_RELEY_ID, "turnOn")
         fibaro:debug('Pump started')
     end
 end
 
 function turnOff_pump()
     fibaro:sleep(1000)
-    if (tonumber(fibaro:getValue(38, "value")) == 1)
+    if (tonumber(fibaro:getValue(WATER_PUMP_RELEY_ID, "value")) == 1)
     then
-        fibaro:call(38, "turnOff")
+        fibaro:call(WATER_PUMP_RELEY_ID, "turnOff")
         fibaro:debug('Pump stopped')
     end
 end
@@ -68,12 +74,12 @@ function start_heating()
 
         turnOn_pump()
 
-        if (freon_t() >= 57)
+        if (freon_t() >= MAX_FREON_T)
         then
             turnOff_heating()
         end
 
-        if (freon_t() < 57)
+        if (freon_t() < MAX_FREON_T)
         then
             turnOn_heating()
         end  
@@ -87,33 +93,25 @@ function start_heating()
 end
 
 function need_heating()
-    fibaro:debug('Water Temp test started')
+    -- if heating was manualy started
+    if (tonumber(fibaro:getValue(HEAT_PUMP_RELEY_ID, "value")) == 1 and tonumber(fibaro:getValue(WATER_PUMP_RELEY_ID, "value")) == 1)
+    then
+    	return true
+	end
 
-    for i=0,10,1 
-    do
-        if (water_t() > HEATING_START_T)
-        then
-            break
-        end
-        turnOn_pump()
-        fibaro:sleep(30*1000)
-    end
     turnOff_pump()
     turnOff_heating()
 
-
-    fibaro:debug('Water Temp test completed: '..water_t())
+    fibaro:debug('Water temperature: ' .. water_t())
     return water_t() < HEATING_START_T
 end
 
-turnOff_heating()
-turnOff_pump()
 
 while true do
     if (need_heating())
     then
         start_heating()
     end
-    fibaro:sleep(30*60*1000) -- sleep for 30 minutes
+    fibaro:sleep(5*1000)
 end
 
