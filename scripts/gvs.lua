@@ -4,14 +4,16 @@
 %% globals
 --]]
 
-local HEATING_START_T       = 40
-local HEATING_STOP_T        = 45
-local MAX_FREON_T           = 57
+local HEATING_START_T           = 40
+local HEATING_STOP_T            = 45
+local MAX_FREON_T               = 57
 
-local HOT_WATER_SENSOR_ID   = 57
-local FREON_SENSOR_ID       = 48
-local HEAT_PUMP_RELEY_ID    = 37
-local WATER_PUMP_RELEY_ID   = 38
+local HOT_WATER_SENSOR_ID       = 57
+local FREON_SENSOR_ID           = 72
+local HEAT_PUMP_RELEY_ID        = 37
+local WATER_PUMP_RELEY_ID       = 38
+local START_HEATING_BUTTON_ID   = 70
+local STOP_HEATING_BUTTON_ID    = 69
 
 function water_t()
 	return tonumber(fibaro:getValue(HOT_WATER_SENSOR_ID, "value"))
@@ -64,6 +66,12 @@ function start_heating()
 
     while true do
 
+        if (stop_heating_button_pressed())
+        then
+            fibaro:debug('Water Heating stopped')
+            break
+        end
+
         if (water_t() >= HEATING_STOP_T)
         then
             fibaro:debug('Water Heating completed')
@@ -92,9 +100,25 @@ function start_heating()
 
 end
 
+function water_and_heat_pumps_started()
+    return tonumber(fibaro:getValue(HEAT_PUMP_RELEY_ID, "value")) == 1 and tonumber(fibaro:getValue(WATER_PUMP_RELEY_ID, "value")) == 1
+end
+
+function start_heating_button_pressed()
+    return fibaro:getValue(START_HEATING_BUTTON_ID, "value") == "1"
+end
+
+function stop_heating_button_pressed()
+    return fibaro:getValue(STOP_HEATING_BUTTON_ID, "value") == "1"
+end
+
 function need_heating()
     -- if heating was manualy started
-    if (tonumber(fibaro:getValue(HEAT_PUMP_RELEY_ID, "value")) == 1 and tonumber(fibaro:getValue(WATER_PUMP_RELEY_ID, "value")) == 1)
+    if (
+        (water_and_heat_pumps_started())
+        or
+        (start_heating_button_pressed())
+    )
     then
     	return true
 	end
