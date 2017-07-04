@@ -1,11 +1,12 @@
 --[[
+%% autostart
 %% properties
 %% events
 %% globals
 --]]
 
 local HEATING_START_T           = 40
-local HEATING_STOP_T            = 45
+local HEATING_STOP_T            = 47
 local MAX_FREON_T               = 57
 
 local HOT_WATER_SENSOR_ID       = 57
